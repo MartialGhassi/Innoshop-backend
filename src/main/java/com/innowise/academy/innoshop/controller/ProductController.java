@@ -1,6 +1,6 @@
-package com.innowise.webtech.innoshop.controller;
+package com.innowise.academy.innoshop.controller;
 
-import com.innowise.webtech.innoshop.model.Product;
+import com.innowise.academy.innoshop.model.Product;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

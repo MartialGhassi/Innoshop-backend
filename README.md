@@ -50,7 +50,7 @@ Returns the list of products as JSON.
 ## Project structure
 
 ```
-src/main/java/com/innowise/webtech/innoshop/
+src/main/java/com/innowise/academy/innoshop/
 ├── InnoshopApplication.java
 ├── controller/   REST controllers
 └── model/        domain classes

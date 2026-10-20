@@ -1,4 +1,4 @@
-package com.innowise.webtech.innoshop;
+package com.innowise.academy.innoshop;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

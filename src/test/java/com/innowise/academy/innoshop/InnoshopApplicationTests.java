@@ -1,4 +1,4 @@
-package com.innowise.webtech.innoshop;
+package com.innowise.academy.innoshop;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
