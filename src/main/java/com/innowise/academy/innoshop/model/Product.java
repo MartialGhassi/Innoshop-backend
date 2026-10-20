@@ -1,4 +1,4 @@
-package com.innowise.webtech.innoshop.model;
+package com.innowise.academy.innoshop.model;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
