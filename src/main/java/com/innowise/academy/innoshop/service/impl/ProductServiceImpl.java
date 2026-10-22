@@ -1,5 +1,6 @@
 package com.innowise.academy.innoshop.service.impl;
 
+import com.innowise.academy.innoshop.exception.ProductNotFoundException;
 import com.innowise.academy.innoshop.model.Product;
 import com.innowise.academy.innoshop.repository.ProductRepository;
 import com.innowise.academy.innoshop.service.ProductService;
@@ -19,5 +20,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    @Override
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 }

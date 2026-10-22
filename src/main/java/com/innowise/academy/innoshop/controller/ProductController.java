@@ -3,6 +3,7 @@ package com.innowise.academy.innoshop.controller;
 import com.innowise.academy.innoshop.model.Product;
 import com.innowise.academy.innoshop.service.ProductService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,5 +22,10 @@ public class ProductController {
     @GetMapping
     public List<Product> getProducts() {
         return productService.getAllProducts();
+    }
+
+    @GetMapping("/{id}")
+    public Product getProductById(@PathVariable Long id) {
+        return productService.getProductById(id);
     }
 }
