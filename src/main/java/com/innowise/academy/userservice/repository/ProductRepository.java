@@ -1,6 +1,6 @@
-package com.innowise.academy.innoshop.repository;
+package com.innowise.academy.userservice.repository;
 
-import com.innowise.academy.innoshop.model.Product;
+import com.innowise.academy.userservice.model.Product;
 
 import java.util.List;
 import java.util.Optional;

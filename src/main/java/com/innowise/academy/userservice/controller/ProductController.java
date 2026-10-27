@@ -1,7 +1,7 @@
-package com.innowise.academy.innoshop.controller;
+package com.innowise.academy.userservice.controller;
 
-import com.innowise.academy.innoshop.model.ProductResponse;
-import com.innowise.academy.innoshop.service.ProductService;
+import com.innowise.academy.userservice.model.ProductResponse;
+import com.innowise.academy.userservice.service.ProductService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

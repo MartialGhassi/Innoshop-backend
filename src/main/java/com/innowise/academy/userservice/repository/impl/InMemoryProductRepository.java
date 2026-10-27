@@ -1,7 +1,7 @@
-package com.innowise.academy.innoshop.repository.impl;
+package com.innowise.academy.userservice.repository.impl;
 
-import com.innowise.academy.innoshop.model.Product;
-import com.innowise.academy.innoshop.repository.ProductRepository;
+import com.innowise.academy.userservice.model.Product;
+import com.innowise.academy.userservice.repository.ProductRepository;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;

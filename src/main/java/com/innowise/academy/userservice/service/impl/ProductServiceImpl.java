@@ -1,10 +1,10 @@
-package com.innowise.academy.innoshop.service.impl;
+package com.innowise.academy.userservice.service.impl;
 
-import com.innowise.academy.innoshop.exception.ProductNotFoundException;
-import com.innowise.academy.innoshop.model.Product;
-import com.innowise.academy.innoshop.model.ProductResponse;
-import com.innowise.academy.innoshop.repository.ProductRepository;
-import com.innowise.academy.innoshop.service.ProductService;
+import com.innowise.academy.userservice.exception.ProductNotFoundException;
+import com.innowise.academy.userservice.model.Product;
+import com.innowise.academy.userservice.model.ProductResponse;
+import com.innowise.academy.userservice.repository.ProductRepository;
+import com.innowise.academy.userservice.service.ProductService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.innowise.academy.innoshop.exception;
+package com.innowise.academy.userservice.exception;
 
 public class ProductNotFoundException extends RuntimeException {
 

@@ -1,6 +1,6 @@
-package com.innowise.academy.innoshop.service;
+package com.innowise.academy.userservice.service;
 
-import com.innowise.academy.innoshop.model.ProductResponse;
+import com.innowise.academy.userservice.model.ProductResponse;
 
 import java.util.List;
 

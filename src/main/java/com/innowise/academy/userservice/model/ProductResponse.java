@@ -1,4 +1,4 @@
-package com.innowise.academy.innoshop.model;
+package com.innowise.academy.userservice.model;
 
 import java.math.BigDecimal;
 
