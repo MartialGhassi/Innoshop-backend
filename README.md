@@ -30,7 +30,7 @@ cd Innoshop-backend
 
 On Windows (PowerShell): `.\gradlew.bat bootRun`
 
-The application starts on <http://localhost:8080>.
+The application starts on <http://localhost:8081>.
 
 ## API
 
