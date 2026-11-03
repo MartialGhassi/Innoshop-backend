@@ -67,8 +67,8 @@ src/main/java/com/innowise/academy/userservice/
 src/main/resources/
 ├── application.properties
 └── db/changelog/
-    ├── db.changelog-master.yaml  Liquibase changeSets
-    └── changes/                  SQL scripts (one folder per changeSet)
+    ├── db.changelog-master.yaml  includes one changelog per task
+    └── changes/<n>/              changelog.yml + SQL scripts of one task (e.g. 1 = USR-1)
 ```
 
 Packages (`controller`, `service`, `repository`, `model`, `config`, `exception`) are added with the features that need them.
