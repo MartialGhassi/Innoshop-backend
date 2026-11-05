@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - changeSet:
+      id: USR-1-create-table-users
+      author: MartialGhassi
+      changes:
+        - sqlFile:
+            relativeToChangelogFile: true
+            path: USR-1-create-table-users.sql
+      rollback:
+        - dropTable:
+            tableName: users
+  - changeSet:
+      id: USR-1-create-table-payment-cards
+      author: MartialGhassi
+      changes:
+        - sqlFile:
+            relativeToChangelogFile: true
+            path: USR-1-create-table-payment-cards.sql
+      rollback:
+        - dropTable:
+            tableName: payment_cards

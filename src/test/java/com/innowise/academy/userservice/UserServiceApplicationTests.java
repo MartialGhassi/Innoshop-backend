@@ -1,10 +1,10 @@
-package com.innowise.academy.innoshop;
+package com.innowise.academy.userservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class InnoshopApplicationTests {
+class UserServiceApplicationTests {
 
 	@Test
 	void contextLoads() {
