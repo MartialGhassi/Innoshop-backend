@@ -18,11 +18,14 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     /**
      * Activates or deactivates a user with a single JPQL update.
      *
+     * <p>Bulk updates bypass JPA auditing, so {@code updatedAt} is set explicitly.
+     *
      * @param id     the user id
      * @param active the new status
      * @return the number of updated rows (0 if the user does not exist)
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("update User u set u.active = :active where u.id = :id")
+    @Query("update User u set u.active = :active, u.updatedAt = CURRENT_TIMESTAMP "
+            + "where u.id = :id")
     int updateActiveStatus(@Param("id") Long id, @Param("active") boolean active);
 }

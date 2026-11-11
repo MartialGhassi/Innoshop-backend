@@ -37,11 +37,14 @@ public interface PaymentCardRepository
     /**
      * Activates or deactivates a card with a single native SQL update.
      *
+     * <p>Bulk updates bypass JPA auditing, so {@code updated_at} is set explicitly.
+     *
      * @param id     the card id
      * @param active the new status
      * @return the number of updated rows (0 if the card does not exist)
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(value = "UPDATE payment_cards SET active = :active WHERE id = :id", nativeQuery = true)
+    @Query(value = "UPDATE payment_cards SET active = :active, updated_at = CURRENT_TIMESTAMP "
+            + "WHERE id = :id", nativeQuery = true)
     int updateActiveStatus(@Param("id") Long id, @Param("active") boolean active);
 }
