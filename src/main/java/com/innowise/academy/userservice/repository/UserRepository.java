@@ -1,8 +1,11 @@
 package com.innowise.academy.userservice.repository;
 
 import com.innowise.academy.userservice.model.entity.User;
+import jakarta.persistence.LockModeType;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,6 +17,20 @@ import org.springframework.data.repository.query.Param;
  * specifications from {@code UserSpecification}.
  */
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+
+    /**
+     * Loads a user and locks its row until the end of the current transaction
+     * ({@code SELECT ... FOR UPDATE}).
+     *
+     * <p>Used to serialize concurrent card operations of the same user, so that
+     * the "maximum 5 active cards" check cannot be bypassed by parallel requests.
+     *
+     * @param id the user id
+     * @return the locked user, empty if it does not exist
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.id = :id")
+    Optional<User> findByIdForUpdate(@Param("id") Long id);
 
     /**
      * Activates or deactivates a user with a single JPQL update.

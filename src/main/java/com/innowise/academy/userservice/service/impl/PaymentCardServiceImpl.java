@@ -20,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
  * Default implementation of {@link PaymentCardService}.
  *
  * <p>Enforces the "maximum 5 active cards per user" rule both when a card is
- * created and when an inactive card is activated again. Read operations run in
+ * created and when an inactive card is activated again. The owner's row is locked
+ * before the check, so concurrent requests for the same user are processed one
+ * after the other and cannot exceed the limit. Read operations run in
  * read-only transactions; write operations override this with a read-write
  * transaction.
  */
@@ -38,8 +40,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Override
     @Transactional
     public PaymentCardResponse create(Long userId, PaymentCardRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+        User user = lockUserOrThrow(userId);
         checkActiveCardLimit(userId);
         PaymentCard card = paymentCardMapper.toEntity(request);
         card.setUser(user);
@@ -85,7 +86,9 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         if (active) {
             PaymentCard card = findCardOrThrow(id);
             if (!card.isActive()) {
-                checkActiveCardLimit(card.getUser().getId());
+                Long userId = card.getUser().getId();
+                lockUserOrThrow(userId);
+                checkActiveCardLimit(userId);
             }
         }
         if (paymentCardRepository.updateActiveStatus(id, active) == 0) {
@@ -96,6 +99,11 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     private PaymentCard findCardOrThrow(Long id) {
         return paymentCardRepository.findById(id)
                 .orElseThrow(() -> new CardNotFoundException(id));
+    }
+
+    private User lockUserOrThrow(Long userId) {
+        return userRepository.findByIdForUpdate(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
     }
 
     private void checkActiveCardLimit(Long userId) {
