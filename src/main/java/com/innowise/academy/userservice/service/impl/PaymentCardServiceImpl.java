@@ -23,12 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
  * created and when an inactive card is activated again. The owner's row is locked
  * before the check, so concurrent requests for the same user are processed one
  * after the other and cannot exceed the limit. Read operations run in
- * read-only transactions; write operations override this with a read-write
- * transaction.
+ * read-only transactions, write operations in read-write transactions.
  */
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PaymentCardServiceImpl implements PaymentCardService {
 
     private static final int MAX_ACTIVE_CARDS = 5;
@@ -48,6 +46,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PaymentCardResponse> getAllByUserId(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new UserNotFoundException(userId);
@@ -59,6 +58,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PaymentCardResponse getById(Long id) {
         return paymentCardMapper.toResponse(findCardOrThrow(id));
     }

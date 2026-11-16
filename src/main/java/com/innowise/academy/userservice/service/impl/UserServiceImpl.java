@@ -18,12 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Default implementation of {@link UserService}.
  *
- * <p>Read operations run in read-only transactions; write operations override this
- * with a read-write transaction.
+ * <p>Read operations run in read-only transactions, write operations in read-write
+ * transactions.
  */
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -37,6 +36,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponse getById(Long id) {
         return userRepository.findById(id)
                 .map(userMapper::toResponse)
@@ -44,6 +44,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<UserResponse> getAll(String name, String surname, Pageable pageable) {
         Specification<UserEntity> spec = UserSpecification.nameContains(name)
                 .and(UserSpecification.surnameContains(surname));
