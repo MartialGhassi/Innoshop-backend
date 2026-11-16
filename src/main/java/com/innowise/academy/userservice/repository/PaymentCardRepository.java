@@ -1,6 +1,6 @@
 package com.innowise.academy.userservice.repository;
 
-import com.innowise.academy.userservice.model.entity.PaymentCard;
+import com.innowise.academy.userservice.model.entity.PaymentCardEntity;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -9,13 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Data access for {@link PaymentCard} entities.
+ * Data access for {@link PaymentCardEntity} entities.
  *
  * <p>Paginated filtering is done through {@link JpaSpecificationExecutor} with the
  * specifications from {@code PaymentCardSpecification}.
  */
 public interface PaymentCardRepository
-        extends JpaRepository<PaymentCard, Long>, JpaSpecificationExecutor<PaymentCard> {
+        extends JpaRepository<PaymentCardEntity, Long>, JpaSpecificationExecutor<PaymentCardEntity> {
 
     /**
      * Returns all cards of a user (derived query).
@@ -23,7 +23,7 @@ public interface PaymentCardRepository
      * @param userId the owner's id
      * @return the user's cards, empty if none
      */
-    List<PaymentCard> findAllByUserId(Long userId);
+    List<PaymentCardEntity> findAllByUserId(Long userId);
 
     /**
      * Counts the active cards of a user (derived query), used for the

@@ -5,8 +5,8 @@ import com.innowise.academy.userservice.exception.CardNotFoundException;
 import com.innowise.academy.userservice.exception.UserNotFoundException;
 import com.innowise.academy.userservice.model.dto.PaymentCardRequest;
 import com.innowise.academy.userservice.model.dto.PaymentCardResponse;
-import com.innowise.academy.userservice.model.entity.PaymentCard;
-import com.innowise.academy.userservice.model.entity.User;
+import com.innowise.academy.userservice.model.entity.PaymentCardEntity;
+import com.innowise.academy.userservice.model.entity.UserEntity;
 import com.innowise.academy.userservice.model.mapper.PaymentCardMapper;
 import com.innowise.academy.userservice.repository.PaymentCardRepository;
 import com.innowise.academy.userservice.repository.UserRepository;
@@ -40,9 +40,9 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Override
     @Transactional
     public PaymentCardResponse create(Long userId, PaymentCardRequest request) {
-        User user = lockUserOrThrow(userId);
+        UserEntity user = lockUserOrThrow(userId);
         checkActiveCardLimit(userId);
-        PaymentCard card = paymentCardMapper.toEntity(request);
+        PaymentCardEntity card = paymentCardMapper.toEntity(request);
         card.setUser(user);
         return paymentCardMapper.toResponse(paymentCardRepository.save(card));
     }
@@ -66,7 +66,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Override
     @Transactional
     public PaymentCardResponse update(Long id, PaymentCardRequest request) {
-        PaymentCard card = findCardOrThrow(id);
+        PaymentCardEntity card = findCardOrThrow(id);
         paymentCardMapper.updateEntity(request, card);
         return paymentCardMapper.toResponse(card);
     }
@@ -84,7 +84,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Transactional
     public void updateStatus(Long id, boolean active) {
         if (active) {
-            PaymentCard card = findCardOrThrow(id);
+            PaymentCardEntity card = findCardOrThrow(id);
             if (!card.isActive()) {
                 Long userId = card.getUser().getId();
                 lockUserOrThrow(userId);
@@ -96,12 +96,12 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         }
     }
 
-    private PaymentCard findCardOrThrow(Long id) {
+    private PaymentCardEntity findCardOrThrow(Long id) {
         return paymentCardRepository.findById(id)
                 .orElseThrow(() -> new CardNotFoundException(id));
     }
 
-    private User lockUserOrThrow(Long userId) {
+    private UserEntity lockUserOrThrow(Long userId) {
         return userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
     }

@@ -15,7 +15,7 @@ import lombok.Setter;
 /**
  * User of the shop, mapped to the {@code users} table.
  *
- * <p>Owns its {@link PaymentCard}s: saving or deleting a user cascades to the cards,
+ * <p>Owns its {@link PaymentCardEntity}s: saving or deleting a user cascades to the cards,
  * and a card removed from {@link #getCards()} is deleted.
  */
 @Entity
@@ -23,7 +23,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class User extends BaseEntity {
+public class UserEntity extends BaseEntity {
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -41,14 +41,14 @@ public class User extends BaseEntity {
     private boolean active = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PaymentCard> cards = new ArrayList<>();
+    private List<PaymentCardEntity> cards = new ArrayList<>();
 
     /**
      * Adds a card to this user and keeps both sides of the relationship in sync.
      *
      * @param card the card to attach to this user
      */
-    public void addCard(PaymentCard card) {
+    public void addCard(PaymentCardEntity card) {
         cards.add(card);
         card.setUser(this);
     }
@@ -59,7 +59,7 @@ public class User extends BaseEntity {
      *
      * @param card the card to detach from this user
      */
-    public void removeCard(PaymentCard card) {
+    public void removeCard(PaymentCardEntity card) {
         cards.remove(card);
         card.setUser(null);
     }

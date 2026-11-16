@@ -1,6 +1,6 @@
 package com.innowise.academy.userservice.repository;
 
-import com.innowise.academy.userservice.model.entity.User;
+import com.innowise.academy.userservice.model.entity.UserEntity;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,12 +11,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Data access for {@link User} entities.
+ * Data access for {@link UserEntity} entities.
  *
  * <p>Paginated filtering is done through {@link JpaSpecificationExecutor} with the
  * specifications from {@code UserSpecification}.
  */
-public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+public interface UserRepository extends JpaRepository<UserEntity, Long>, JpaSpecificationExecutor<UserEntity> {
 
     /**
      * Loads a user and locks its row until the end of the current transaction
@@ -29,8 +29,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      * @return the locked user, empty if it does not exist
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select u from User u where u.id = :id")
-    Optional<User> findByIdForUpdate(@Param("id") Long id);
+    @Query("select u from UserEntity u where u.id = :id")
+    Optional<UserEntity> findByIdForUpdate(@Param("id") Long id);
 
     /**
      * Activates or deactivates a user with a single JPQL update.
@@ -42,7 +42,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      * @return the number of updated rows (0 if the user does not exist)
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("update User u set u.active = :active, u.updatedAt = CURRENT_TIMESTAMP "
+    @Query("update UserEntity u set u.active = :active, u.updatedAt = CURRENT_TIMESTAMP "
             + "where u.id = :id")
     int updateActiveStatus(@Param("id") Long id, @Param("active") boolean active);
 }

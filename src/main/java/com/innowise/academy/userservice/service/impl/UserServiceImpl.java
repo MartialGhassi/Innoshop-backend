@@ -3,7 +3,7 @@ package com.innowise.academy.userservice.service.impl;
 import com.innowise.academy.userservice.exception.UserNotFoundException;
 import com.innowise.academy.userservice.model.dto.UserRequest;
 import com.innowise.academy.userservice.model.dto.UserResponse;
-import com.innowise.academy.userservice.model.entity.User;
+import com.innowise.academy.userservice.model.entity.UserEntity;
 import com.innowise.academy.userservice.model.mapper.UserMapper;
 import com.innowise.academy.userservice.repository.UserRepository;
 import com.innowise.academy.userservice.repository.specification.UserSpecification;
@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse create(UserRequest request) {
-        User user = userMapper.toEntity(request);
+        UserEntity user = userMapper.toEntity(request);
         return userMapper.toResponse(userRepository.save(user));
     }
 
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponse> getAll(String name, String surname, Pageable pageable) {
-        Specification<User> spec = UserSpecification.nameContains(name)
+        Specification<UserEntity> spec = UserSpecification.nameContains(name)
                 .and(UserSpecification.surnameContains(surname));
         return userRepository.findAll(spec, pageable).map(userMapper::toResponse);
     }
@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse update(Long id, UserRequest request) {
-        User user = findUserOrThrow(id);
+        UserEntity user = findUserOrThrow(id);
         userMapper.updateEntity(request, user);
         return userMapper.toResponse(user);
     }
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private User findUserOrThrow(Long id) {
+    private UserEntity findUserOrThrow(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
