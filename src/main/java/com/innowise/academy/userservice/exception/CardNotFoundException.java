@@ -11,6 +11,6 @@ public class CardNotFoundException extends RuntimeException {
      * @param id the id that was not found
      */
     public CardNotFoundException(Long id) {
-        super("Payment card with id " + id + " not found");
+        super(ErrorCode.CARD_NOT_FOUND.format(id));
     }
 }

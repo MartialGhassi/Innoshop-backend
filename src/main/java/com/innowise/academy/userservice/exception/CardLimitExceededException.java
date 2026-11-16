@@ -11,6 +11,6 @@ public class CardLimitExceededException extends RuntimeException {
      * @param userId the id of the user who reached the limit
      */
     public CardLimitExceededException(Long userId) {
-        super("User with id " + userId + " already has the maximum of 5 active cards");
+        super(ErrorCode.CARD_LIMIT_EXCEEDED.format(userId));
     }
 }
