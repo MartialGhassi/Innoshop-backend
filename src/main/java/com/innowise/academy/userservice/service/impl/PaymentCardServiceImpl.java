@@ -68,7 +68,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     public PaymentCardResponse update(Long id, PaymentCardRequest request) {
         PaymentCardEntity card = findCardOrThrow(id);
         paymentCardMapper.updateEntity(request, card);
-        return paymentCardMapper.toResponse(card);
+        return paymentCardMapper.toResponse(paymentCardRepository.saveAndFlush(card));
     }
 
     @Override

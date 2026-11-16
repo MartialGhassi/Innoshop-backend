@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse update(Long id, UserRequest request) {
         UserEntity user = findUserOrThrow(id);
         userMapper.updateEntity(request, user);
-        return userMapper.toResponse(user);
+        return userMapper.toResponse(userRepository.saveAndFlush(user));
     }
 
     @Override
