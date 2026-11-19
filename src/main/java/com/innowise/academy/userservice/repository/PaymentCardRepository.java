@@ -35,6 +35,17 @@ public interface PaymentCardRepository
     long countByUserIdAndActiveTrue(Long userId);
 
     /**
+     * Checks in the database whether a card is currently active (derived query).
+     *
+     * <p>Used after locking the owner's row, so the result reflects the latest
+     * committed state rather than a possibly stale entity in the persistence context.
+     *
+     * @param id the card id
+     * @return {@code true} if the card exists and is active
+     */
+    boolean existsByIdAndActiveTrue(Long id);
+
+    /**
      * Activates or deactivates a card with a single native SQL update.
      *
      * <p>Bulk updates bypass JPA auditing, so {@code updated_at} is set explicitly.

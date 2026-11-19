@@ -21,8 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Enforces the "maximum 5 active cards per user" rule both when a card is
  * created and when an inactive card is activated again. The owner's row is locked
- * before the check, so concurrent requests for the same user are processed one
- * after the other and cannot exceed the limit. Read operations run in
+ * before every activation, and the card's current state is re-read under that lock,
+ * so concurrent requests for the same user are processed one after the other and
+ * cannot exceed the limit. Read operations run in
  * read-only transactions, write operations in read-write transactions.
  */
 @Service
@@ -84,10 +85,9 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Transactional
     public void updateStatus(Long id, boolean active) {
         if (active) {
-            PaymentCardEntity card = findCardOrThrow(id);
-            if (!card.isActive()) {
-                Long userId = card.getUser().getId();
-                lockUserOrThrow(userId);
+            Long userId = findCardOrThrow(id).getUser().getId();
+            lockUserOrThrow(userId);
+            if (!paymentCardRepository.existsByIdAndActiveTrue(id)) {
                 checkActiveCardLimit(userId);
             }
         }
