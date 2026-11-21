@@ -4,19 +4,17 @@ User Service of the **Innowise Java Advanced** training course. It manages user 
 
 ## Current scope
 
-- Spring Boot project skeleton (`com.innowise.academy.userservice`)
 - Runs on port `8081` (port `8080` is reserved for the API Gateway)
 - PostgreSQL 17 running in Docker Compose, connection settings read from environment variables
 - Database schema managed by Liquibase: tables `users` and `payment_cards`
-- No business endpoints yet
+- Spring Data JPA entities with auditing (`created_at`, `updated_at`), Specifications and pagination
+- DTOs mapped with MapStruct, Bean Validation on request bodies
+- Business rule: at most 5 active cards per user (checked on creation and on re-activation)
+- REST API for users and payment cards
+- Global exception handling with `@RestControllerAdvice` and a uniform JSON error body
 
 ## Planned features
 
-- Spring Data JPA with auditing, Specifications and pagination
-- DTOs mapped with MapStruct, Bean Validation
-- Business rule: at most 5 active cards per user
-- REST API for users (`/api/users`) and cards (`/api/users/{userId}/cards`, `/api/cards`)
-- Global exception handling with `@ControllerAdvice`
 - Redis caching of `getUserById`
 - Unit tests (JUnit 5, Mockito) and integration tests (Testcontainers)
 - Dockerfile, `local` and `docker` Spring profiles
@@ -26,6 +24,7 @@ User Service of the **Innowise Java Advanced** training course. It manages user 
 
 - Java 25
 - Spring Boot 4.1.1 (Spring Web MVC, Validation, Spring Data JPA)
+- MapStruct
 - PostgreSQL 17 (Docker Compose)
 - Liquibase
 - Gradle (wrapper included)
@@ -57,18 +56,92 @@ docker compose ps
 docker exec -it user-service-db psql -U user_service -d user_service -c "\dt"
 ```
 
+## REST API
+
+Base URL: `http://localhost:8081`
+
+### Users
+
+| Method | Path | Description | Success |
+|---|---|---|---|
+| `POST` | `/api/users` | Create a user | `201 Created` + `Location` header |
+| `GET` | `/api/users?name=&surname=&page=&size=&sort=` | Paginated list, optional filters on name/surname (contains, case-insensitive) | `200 OK` |
+| `GET` | `/api/users/{id}` | Get a user | `200 OK` |
+| `PUT` | `/api/users/{id}` | Update a user | `200 OK` |
+| `DELETE` | `/api/users/{id}` | Delete a user and all their cards | `204 No Content` |
+| `PATCH` | `/api/users/{id}/status` | Activate or deactivate a user | `204 No Content` |
+
+### Payment cards
+
+| Method | Path | Description | Success |
+|---|---|---|---|
+| `POST` | `/api/users/{userId}/cards` | Add a card to a user | `201 Created` + `Location: /api/cards/{id}` |
+| `GET` | `/api/users/{userId}/cards` | List the cards of a user | `200 OK` |
+| `GET` | `/api/cards/{id}` | Get a card | `200 OK` |
+| `PUT` | `/api/cards/{id}` | Update a card | `200 OK` |
+| `DELETE` | `/api/cards/{id}` | Delete a card | `204 No Content` |
+| `PATCH` | `/api/cards/{id}/status` | Activate or deactivate a card | `204 No Content` |
+
+### Examples
+
+```bash
+curl -i -X POST http://localhost:8081/api/users   -H "Content-Type: application/json"   -d '{"name":"Anna","surname":"Smith","birthDate":"1995-05-10","email":"anna.smith@example.com"}'
+
+curl -i -X POST http://localhost:8081/api/users/1/cards   -H "Content-Type: application/json"   -d '{"number":"4000000000000001","holder":"ANNA SMITH","expirationDate":"2030-01-01"}'
+
+curl -i -X PATCH http://localhost:8081/api/cards/1/status   -H "Content-Type: application/json"   -d '{"active":false}'
+```
+
+Only synthetic test data must be used, never real card numbers.
+
+## Error handling
+
+Every error is returned with the same JSON body:
+
+```json
+{
+  "timestamp": "2026-11-21T02:01:09.776",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Request validation failed",
+  "path": "/api/users",
+  "fieldErrors": {
+    "name": "must not be blank",
+    "email": "must be a well-formed email address"
+  }
+}
+```
+
+| Status | When |
+|---|---|
+| `400 Bad Request` | Invalid request body (`fieldErrors` lists the invalid fields), malformed JSON, path variable of the wrong type (e.g. `/api/users/abc`) |
+| `404 Not Found` | Unknown user or card, unknown endpoint |
+| `409 Conflict` | Email already used, card number already used, user already has 5 active cards |
+| `500 Internal Server Error` | Unexpected error (logged, no internal details in the response) |
+
+All messages are defined in the `ErrorCode` enum.
+
 ## Project structure
 
 ```
 compose.yaml                      PostgreSQL container
 .env.example                      template for the local .env file
 src/main/java/com/innowise/academy/userservice/
-└── UserServiceApplication.java   Spring Boot entry point
+├── UserServiceApplication.java   Spring Boot entry point
+├── config/                       JPA auditing, Page serialization
+├── controller/                   UserController, PaymentCardController
+├── service/                      service interfaces
+│   └── impl/                     service implementations (business rules, transactions)
+├── repository/                   Spring Data JPA repositories
+│   └── specification/            filters for the paginated queries
+├── model/
+│   ├── entity/                   JPA entities (BaseEntity, UserEntity, PaymentCardEntity)
+│   ├── dto/                      request/response records, ErrorResponse
+│   └── mapper/                   MapStruct mappers
+└── exception/                    custom exceptions, ErrorCode, GlobalExceptionHandler
 src/main/resources/
 ├── application.properties
 └── db/changelog/
     ├── db.changelog-master.yaml  includes one changelog per task
     └── changes/<n>/              changelog.yml + SQL scripts of one task (e.g. 1 = USR-1)
 ```
-
-Packages (`controller`, `service`, `repository`, `model`, `config`, `exception`) are added with the features that need them.
