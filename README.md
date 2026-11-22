@@ -12,10 +12,10 @@ User Service of the **Innowise Java Advanced** training course. It manages user 
 - Business rule: at most 5 active cards per user (checked on creation and on re-activation)
 - REST API for users and payment cards
 - Global exception handling with `@RestControllerAdvice` and a uniform JSON error body
+- Redis cache for `GET /api/users/{id}` (user with their cards), evicted on every change
 
 ## Planned features
 
-- Redis caching of `getUserById`
 - Unit tests (JUnit 5, Mockito) and integration tests (Testcontainers)
 - Dockerfile, `local` and `docker` Spring profiles
 - CI pipeline with GitHub Actions and SonarCloud
@@ -26,6 +26,7 @@ User Service of the **Innowise Java Advanced** training course. It manages user 
 - Spring Boot 4.1.1 (Spring Web MVC, Validation, Spring Data JPA)
 - MapStruct
 - PostgreSQL 17 (Docker Compose)
+- Redis 7 with Spring Cache (Docker Compose)
 - Liquibase
 - Gradle (wrapper included)
 - Lombok
@@ -45,15 +46,16 @@ docker compose up -d
 
 On Windows (PowerShell): `Copy-Item .env.example .env`, then `.\gradlew.bat bootRun`.
 
-`.env` holds the database settings (`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`). It is read by Docker Compose and imported by Spring Boot, and it is ignored by Git.
+`.env` holds the database settings (`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`) and the Redis port (`REDIS_PORT`). It is read by Docker Compose and imported by Spring Boot, and it is ignored by Git.
 
 On startup Liquibase creates the tables. The application starts on <http://localhost:8081>.
 
-Check the database:
+Check the database and the cache:
 
 ```bash
 docker compose ps
 docker exec -it user-service-db psql -U user_service -d user_service -c "\dt"
+docker exec -it user-service-cache redis-cli ping
 ```
 
 ## REST API
@@ -116,19 +118,43 @@ Every error is returned with the same JSON body:
 |---|---|
 | `400 Bad Request` | Invalid request body (`fieldErrors` lists the invalid fields), malformed JSON, path variable of the wrong type (e.g. `/api/users/abc`) |
 | `404 Not Found` | Unknown user or card, unknown endpoint |
+| `405 Method Not Allowed` | HTTP method not supported by the endpoint (e.g. `PUT /api/users/{id}/status`) |
+| `415 Unsupported Media Type` | Request body that is not JSON |
 | `409 Conflict` | Email already used, card number already used, user already has 5 active cards |
 | `500 Internal Server Error` | Unexpected error (logged, no internal details in the response) |
 
 All messages are defined in the `ErrorCode` enum.
 
+## Caching
+
+`GET /api/users/{id}` is cached in Redis (cache `users`, key = user id, e.g. `users::1`). The cached value is the `UserDetailsResponse` DTO, the user with their payment cards, stored as JSON.
+
+| Operation | Effect on the cache |
+|---|---|
+| `GET /api/users/{id}` | Read from Redis if present, otherwise loaded from PostgreSQL and stored |
+| `PUT`, `DELETE`, `PATCH .../status` on a user | Entry of this user evicted |
+| `POST`, `PUT`, `DELETE`, `PATCH .../status` on a card | Entry of the card's owner evicted |
+
+- Entries expire after 10 minutes (`spring.cache.redis.time-to-live`).
+- Evictions are applied only after the database transaction commits.
+- Unknown users (`404`) are never cached.
+
+Inspect the cache:
+
+```bash
+docker exec -it user-service-cache redis-cli KEYS "users::*"
+docker exec -it user-service-cache redis-cli GET users::1
+docker exec -it user-service-cache redis-cli TTL users::1
+```
+
 ## Project structure
 
 ```
-compose.yaml                      PostgreSQL container
+compose.yaml                      PostgreSQL and Redis containers
 .env.example                      template for the local .env file
 src/main/java/com/innowise/academy/userservice/
 ├── UserServiceApplication.java   Spring Boot entry point
-├── config/                       JPA auditing, Page serialization
+├── config/                       JPA auditing, Page serialization, Redis cache
 ├── controller/                   UserController, PaymentCardController
 ├── service/                      service interfaces
 │   └── impl/                     service implementations (business rules, transactions)
