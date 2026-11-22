@@ -139,15 +139,23 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles every unexpected exception and logs it, without exposing internal details.
+     * Handles every remaining exception. Spring MVC client errors (e.g. 405 unsupported method,
+     * 415 unsupported media type) keep their own status; anything else is logged and reported
+     * as 500 without exposing internal details.
      *
      * @param ex      the unexpected exception
      * @param request the current request
-     * @return a 500 error response
+     * @return the framework's status for Spring MVC errors, otherwise a 500 error response
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex,
                                                           HttpServletRequest request) {
+        if (ex instanceof org.springframework.web.ErrorResponse springError) {
+            HttpStatus status = HttpStatus.resolve(springError.getStatusCode().value());
+            if (status != null && status.is4xxClientError()) {
+                return buildResponse(status, springError.getBody().getDetail(), request, Map.of());
+            }
+        }
         log.error("Unexpected error on {}", request.getRequestURI(), ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR.format(),
                 request, Map.of());
