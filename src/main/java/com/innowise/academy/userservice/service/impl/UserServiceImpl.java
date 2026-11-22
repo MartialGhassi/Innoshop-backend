@@ -1,6 +1,7 @@
 package com.innowise.academy.userservice.service.impl;
 
 import com.innowise.academy.userservice.exception.UserNotFoundException;
+import com.innowise.academy.userservice.model.dto.UserDetailsResponse;
 import com.innowise.academy.userservice.model.dto.UserRequest;
 import com.innowise.academy.userservice.model.dto.UserResponse;
 import com.innowise.academy.userservice.model.entity.UserEntity;
@@ -37,9 +38,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponse getById(Long id) {
+    public UserDetailsResponse getById(Long id) {
         return userRepository.findById(id)
-                .map(userMapper::toResponse)
+                .map(userMapper::toDetailsResponse)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
 

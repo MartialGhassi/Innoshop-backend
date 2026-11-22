@@ -1,6 +1,7 @@
 package com.innowise.academy.userservice.service;
 
 import com.innowise.academy.userservice.exception.UserNotFoundException;
+import com.innowise.academy.userservice.model.dto.UserDetailsResponse;
 import com.innowise.academy.userservice.model.dto.UserRequest;
 import com.innowise.academy.userservice.model.dto.UserResponse;
 import org.springframework.data.domain.Page;
@@ -22,13 +23,13 @@ public interface UserService {
     UserResponse create(UserRequest request);
 
     /**
-     * Returns the user with the given id.
+     * Returns the user with the given id, including its payment cards.
      *
      * @param id the user id
-     * @return the matching user
+     * @return the matching user with its cards
      * @throws UserNotFoundException if no user exists with this id
      */
-    UserResponse getById(Long id);
+    UserDetailsResponse getById(Long id);
 
     /**
      * Returns one page of users, optionally filtered by name and surname.

@@ -66,7 +66,7 @@ Base URL: `http://localhost:8081`
 |---|---|---|---|
 | `POST` | `/api/users` | Create a user | `201 Created` + `Location` header |
 | `GET` | `/api/users?name=&surname=&page=&size=&sort=` | Paginated list, optional filters on name/surname (contains, case-insensitive) | `200 OK` |
-| `GET` | `/api/users/{id}` | Get a user | `200 OK` |
+| `GET` | `/api/users/{id}` | Get a user with their payment cards | `200 OK` |
 | `PUT` | `/api/users/{id}` | Update a user | `200 OK` |
 | `DELETE` | `/api/users/{id}` | Delete a user and all their cards | `204 No Content` |
 | `PATCH` | `/api/users/{id}/status` | Activate or deactivate a user | `204 No Content` |
