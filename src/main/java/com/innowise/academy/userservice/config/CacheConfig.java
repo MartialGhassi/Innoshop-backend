@@ -14,7 +14,8 @@ import org.springframework.data.redis.serializer.RedisSerializationContext.Seria
  * Enables Spring's cache abstraction and configures the Redis caches.
  *
  * <p>Cached values are stored as JSON, so they stay readable in Redis and do not depend on
- * Java serialization.
+ * Java serialization. The cache manager is transaction-aware: puts and evictions made inside
+ * a transaction are applied only after it commits.
  */
 @Configuration
 @EnableCaching
@@ -27,7 +28,8 @@ public class CacheConfig {
 
     /**
      * Configures the {@value #USERS_CACHE} cache with a JSON serializer and the time-to-live
-     * set in {@code spring.cache.redis.time-to-live}.
+     * set in {@code spring.cache.redis.time-to-live}, and makes the cache manager
+     * transaction-aware.
      *
      * @param cacheProperties the {@code spring.cache.*} properties
      * @return the customizer applied to the auto-configured Redis cache manager
@@ -39,6 +41,7 @@ public class CacheConfig {
                 .disableCachingNullValues()
                 .serializeValuesWith(SerializationPair.fromSerializer(
                         new JacksonJsonRedisSerializer<>(UserDetailsResponse.class)));
-        return builder -> builder.withCacheConfiguration(USERS_CACHE, usersCacheConfig);
+        return builder -> builder.withCacheConfiguration(USERS_CACHE, usersCacheConfig)
+                .transactionAware();
     }
 }

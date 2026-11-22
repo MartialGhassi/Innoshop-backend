@@ -1,5 +1,6 @@
 package com.innowise.academy.userservice.service.impl;
 
+import com.innowise.academy.userservice.config.CacheConfig;
 import com.innowise.academy.userservice.exception.CardLimitExceededException;
 import com.innowise.academy.userservice.exception.CardNotFoundException;
 import com.innowise.academy.userservice.exception.UserNotFoundException;
@@ -13,6 +14,8 @@ import com.innowise.academy.userservice.repository.UserRepository;
 import com.innowise.academy.userservice.service.PaymentCardService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
  * so concurrent requests for the same user are processed one after the other and
  * cannot exceed the limit. Read operations run in
  * read-only transactions, write operations in read-write transactions.
+ *
+ * <p>The owner's cached details include its cards, so every write on a card evicts the
+ * owner's entry from the {@value CacheConfig#USERS_CACHE} cache. The eviction is done
+ * through the {@link CacheManager} because the owner's id is only known once the card
+ * has been loaded.
  */
 @Service
 @RequiredArgsConstructor
@@ -35,6 +43,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     private final PaymentCardRepository paymentCardRepository;
     private final UserRepository userRepository;
     private final PaymentCardMapper paymentCardMapper;
+    private final CacheManager cacheManager;
 
     @Override
     @Transactional
@@ -43,7 +52,9 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         checkActiveCardLimit(userId);
         PaymentCardEntity card = paymentCardMapper.toEntity(request);
         card.setUser(user);
-        return paymentCardMapper.toResponse(paymentCardRepository.save(card));
+        PaymentCardResponse response = paymentCardMapper.toResponse(paymentCardRepository.save(card));
+        evictCachedUser(userId);
+        return response;
     }
 
     @Override
@@ -69,23 +80,25 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     public PaymentCardResponse update(Long id, PaymentCardRequest request) {
         PaymentCardEntity card = findCardOrThrow(id);
         paymentCardMapper.updateEntity(request, card);
-        return paymentCardMapper.toResponse(paymentCardRepository.saveAndFlush(card));
+        PaymentCardResponse response =
+                paymentCardMapper.toResponse(paymentCardRepository.saveAndFlush(card));
+        evictCachedUser(response.userId());
+        return response;
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
-        if (!paymentCardRepository.existsById(id)) {
-            throw new CardNotFoundException(id);
-        }
+        Long userId = findCardOrThrow(id).getUser().getId();
         paymentCardRepository.deleteById(id);
+        evictCachedUser(userId);
     }
 
     @Override
     @Transactional
     public void updateStatus(Long id, boolean active) {
+        Long userId = findCardOrThrow(id).getUser().getId();
         if (active) {
-            Long userId = findCardOrThrow(id).getUser().getId();
             lockUserOrThrow(userId);
             if (!paymentCardRepository.existsByIdAndActiveTrue(id)) {
                 checkActiveCardLimit(userId);
@@ -94,6 +107,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         if (paymentCardRepository.updateActiveStatus(id, active) == 0) {
             throw new CardNotFoundException(id);
         }
+        evictCachedUser(userId);
     }
 
     private PaymentCardEntity findCardOrThrow(Long id) {
@@ -104,6 +118,13 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     private UserEntity lockUserOrThrow(Long userId) {
         return userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
+    }
+
+    private void evictCachedUser(Long userId) {
+        Cache usersCache = cacheManager.getCache(CacheConfig.USERS_CACHE);
+        if (usersCache != null) {
+            usersCache.evict(userId);
+        }
     }
 
     private void checkActiveCardLimit(Long userId) {
