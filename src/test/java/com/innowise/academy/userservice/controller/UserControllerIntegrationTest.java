@@ -182,7 +182,8 @@ class UserControllerIntegrationTest {
     void getByNonNumericIdReturns400() throws Exception {
         mockMvc.perform(get("/api/users/abc"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Parameter 'id' has an invalid value 'abc'"));
+                .andExpect(jsonPath("$.message")
+                        .value("Parameter 'id' has an invalid value 'abc'"));
     }
 
     // ---------- PUT /api/users/{id} ----------

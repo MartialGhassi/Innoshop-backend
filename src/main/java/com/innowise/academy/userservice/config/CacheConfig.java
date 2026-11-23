@@ -35,7 +35,8 @@ public class CacheConfig {
      * @return the customizer applied to the auto-configured Redis cache manager
      */
     @Bean
-    public RedisCacheManagerBuilderCustomizer usersCacheCustomizer(CacheProperties cacheProperties) {
+    public RedisCacheManagerBuilderCustomizer usersCacheCustomizer(
+            CacheProperties cacheProperties) {
         RedisCacheConfiguration usersCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(cacheProperties.getRedis().getTimeToLive())
                 .disableCachingNullValues()

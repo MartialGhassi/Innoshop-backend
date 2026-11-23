@@ -41,8 +41,9 @@ public class PaymentCardController {
      * @return 201 Created with the created card and its location
      */
     @PostMapping("/users/{userId}/cards")
-    public ResponseEntity<PaymentCardResponse> create(@PathVariable Long userId,
-                                                      @Valid @RequestBody PaymentCardRequest request) {
+    public ResponseEntity<PaymentCardResponse> create(
+            @PathVariable Long userId,
+            @Valid @RequestBody PaymentCardRequest request) {
         PaymentCardResponse created = paymentCardService.create(userId, request);
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/api/cards/{id}")
@@ -81,8 +82,9 @@ public class PaymentCardController {
      * @return 200 OK with the updated card
      */
     @PutMapping("/cards/{id}")
-    public ResponseEntity<PaymentCardResponse> update(@PathVariable Long id,
-                                                      @Valid @RequestBody PaymentCardRequest request) {
+    public ResponseEntity<PaymentCardResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody PaymentCardRequest request) {
         return ResponseEntity.ok(paymentCardService.update(id, request));
     }
 

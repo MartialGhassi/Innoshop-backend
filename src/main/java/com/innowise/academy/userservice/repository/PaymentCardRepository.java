@@ -15,7 +15,8 @@ import org.springframework.data.repository.query.Param;
  * specifications from {@code PaymentCardSpecification}.
  */
 public interface PaymentCardRepository
-        extends JpaRepository<PaymentCardEntity, Long>, JpaSpecificationExecutor<PaymentCardEntity> {
+        extends JpaRepository<PaymentCardEntity, Long>,
+        JpaSpecificationExecutor<PaymentCardEntity> {
 
     /**
      * Returns all cards of a user (derived query).
