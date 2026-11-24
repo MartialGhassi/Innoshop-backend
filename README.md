@@ -15,10 +15,7 @@ User Service of the **Innowise Java Advanced** training course. It manages user 
 - Redis cache for `GET /api/users/{id}` (user with their cards), evicted on every change
 - Unit tests (JUnit 5, Mockito) and integration tests (Testcontainers, MockMvc), JaCoCo coverage rule
 - Multi-stage Dockerfile, `local` and `docker` Spring profiles, whole stack runnable with Docker Compose
-
-## Planned features
-
-- CI pipeline with GitHub Actions and SonarCloud
+- CI pipeline with GitHub Actions: build, tests, SonarCloud analysis, Docker image
 
 ## Tech stack
 
@@ -204,9 +201,24 @@ docker run --rm --network user-service_default --env-file .env -p 127.0.0.1:8081
 
 `user-service_default` is the network created by Compose. Its name comes from the project name set in `compose.yaml` (`name: user-service`), so it does not depend on the name of the cloned folder.
 
+## CI
+
+The GitHub Actions workflow `.github/workflows/ci.yml` runs on every push, on an Ubuntu runner:
+
+| Step | Command |
+|---|---|
+| Build the application and run all tests (unit + Testcontainers, JaCoCo rule) | `./gradlew check` |
+| Code analysis on [SonarCloud](https://sonarcloud.io/project/overview?id=MartialGhassi_Innoshop-backend) (including JaCoCo coverage) | `./gradlew sonar` |
+| Build the Docker image (tagged with the commit SHA) | `docker build -t user-service:<sha> .` |
+
+- The SonarCloud token is stored as the GitHub repository secret `SONAR_TOKEN`, never in the code.
+- Automatic Analysis is disabled on SonarCloud, the analysis only runs from the CI.
+- With the SonarCloud free plan, results are only visible for the main branch (`dev`).
+
 ## Project structure
 
 ```
+.github/workflows/ci.yml          GitHub Actions CI pipeline
 Dockerfile                        multi-stage build of the application image
 .dockerignore                     files excluded from the Docker build context
 compose.yaml                      PostgreSQL, Redis and application containers
