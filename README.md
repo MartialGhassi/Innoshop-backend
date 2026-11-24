@@ -13,10 +13,10 @@ User Service of the **Innowise Java Advanced** training course. It manages user 
 - REST API for users and payment cards
 - Global exception handling with `@RestControllerAdvice` and a uniform JSON error body
 - Redis cache for `GET /api/users/{id}` (user with their cards), evicted on every change
+- Unit tests (JUnit 5, Mockito) and integration tests (Testcontainers, MockMvc), JaCoCo coverage rule
 
 ## Planned features
 
-- Unit tests (JUnit 5, Mockito) and integration tests (Testcontainers)
 - Dockerfile, `local` and `docker` Spring profiles
 - CI pipeline with GitHub Actions and SonarCloud
 
@@ -146,6 +146,18 @@ docker exec -it user-service-cache redis-cli KEYS "users::*"
 docker exec -it user-service-cache redis-cli GET users::1
 docker exec -it user-service-cache redis-cli TTL users::1
 ```
+
+## Tests
+
+Requirements: Docker must be running (the integration tests start their own containers).
+
+```bash
+./gradlew check
+```
+
+- **Unit tests** (`service/impl`): JUnit 5 and Mockito, repositories and mappers are mocked.
+- **Integration tests** (`controller`): the full application is started with MockMvc against real PostgreSQL and Redis containers provided by Testcontainers (`@ServiceConnection`), the local `docker compose` stack is not needed.
+- **Coverage**: JaCoCo report in `build/reports/jacoco/test/html/index.html`. `check` fails if a class in `service.impl` has less than 80 % line coverage.
 
 ## Project structure
 
