@@ -14,10 +14,10 @@ User Service of the **Innowise Java Advanced** training course. It manages user 
 - Global exception handling with `@RestControllerAdvice` and a uniform JSON error body
 - Redis cache for `GET /api/users/{id}` (user with their cards), evicted on every change
 - Unit tests (JUnit 5, Mockito) and integration tests (Testcontainers, MockMvc), JaCoCo coverage rule
+- Multi-stage Dockerfile, `local` and `docker` Spring profiles, whole stack runnable with Docker Compose
 
 ## Planned features
 
-- Dockerfile, `local` and `docker` Spring profiles
 - CI pipeline with GitHub Actions and SonarCloud
 
 ## Tech stack
@@ -40,13 +40,15 @@ Requirements: JDK 25, Git and Docker. Gradle is not needed, the wrapper is inclu
 git clone https://github.com/MartialGhassi/Innoshop-backend.git
 cd Innoshop-backend
 cp .env.example .env
-docker compose up -d
+docker compose up -d postgres redis
 ./gradlew bootRun
 ```
 
 On Windows (PowerShell): `Copy-Item .env.example .env`, then `.\gradlew.bat bootRun`.
 
-`.env` holds the database settings (`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`) and the Redis port (`REDIS_PORT`). It is read by Docker Compose and imported by Spring Boot, and it is ignored by Git.
+`.env` holds the database settings (`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`), the Redis port (`REDIS_PORT`) and the port of the application container (`APP_PORT`). It is read by Docker Compose and imported by Spring Boot, and it is ignored by Git.
+
+Without an active profile the application uses the `local` profile (see [Docker](#docker)).
 
 On startup Liquibase creates the tables. The application starts on <http://localhost:8081>.
 
@@ -159,10 +161,55 @@ Requirements: Docker must be running (the integration tests start their own cont
 - **Integration tests** (`controller`): the full application is started with MockMvc against real PostgreSQL and Redis containers provided by Testcontainers (`@ServiceConnection`), the local `docker compose` stack is not needed.
 - **Coverage**: JaCoCo report in `build/reports/jacoco/test/html/index.html`. `check` fails if a class in `service.impl` has less than 80 % line coverage.
 
+## Docker
+
+### Spring profiles
+
+| Profile | Activated | PostgreSQL | Redis |
+|---|---|---|---|
+| `local` | by default (`spring.profiles.default`), e.g. `bootRun` or IntelliJ | `localhost:${POSTGRES_PORT}` | `localhost:${REDIS_PORT}` |
+| `docker` | by the image (`SPRING_PROFILES_ACTIVE=docker`) | `postgres:5432` | `redis:6379` |
+
+Inside a container `localhost` is the container itself, so the `docker` profile reaches PostgreSQL and Redis by their Compose service names on the Docker network.
+
+### Image
+
+The `Dockerfile` is multi-stage:
+
+1. **build**: `eclipse-temurin:25-jdk-alpine`, downloads the dependencies (cached layer), then builds the jar with `./gradlew bootJar`. Tests are not run here, they need Docker themselves (run `./gradlew check` locally).
+2. **runtime**: `eclipse-temurin:25-jre-alpine`, contains only the jar and runs it as the non-root user `app`.
+
+`.dockerignore` keeps `.env`, `.git`, build output and IDE files out of the build context, so no secret ends up in the image.
+
+### Run the whole stack
+
+```bash
+docker compose up -d --build
+```
+
+Starts PostgreSQL, Redis and the application (`user-service-app`). The application waits until both are healthy and is available on <http://localhost:8081> (`APP_PORT`). Stop the application or the `bootRun` instance first if port `8081` is already in use, or set another `APP_PORT` in `.env`.
+
+```bash
+docker compose logs -f app     # follow the application logs
+docker compose down            # stop and remove the containers (data volume is kept)
+```
+
+### Run the image without Compose for the application
+
+```bash
+docker compose up -d postgres redis
+docker build -t user-service .
+docker run --rm --network innoshop_default --env-file .env -p 127.0.0.1:8081:8081 user-service
+```
+
+`innoshop_default` is the network created by Compose (`<project folder>_default`, check with `docker network ls`).
+
 ## Project structure
 
 ```
-compose.yaml                      PostgreSQL and Redis containers
+Dockerfile                        multi-stage build of the application image
+.dockerignore                     files excluded from the Docker build context
+compose.yaml                      PostgreSQL, Redis and application containers
 .env.example                      template for the local .env file
 src/main/java/com/innowise/academy/userservice/
 ├── UserServiceApplication.java   Spring Boot entry point
@@ -178,7 +225,9 @@ src/main/java/com/innowise/academy/userservice/
 │   └── mapper/                   MapStruct mappers
 └── exception/                    custom exceptions, ErrorCode, GlobalExceptionHandler
 src/main/resources/
-├── application.properties
+├── application.properties        common settings
+├── application-local.properties  local profile (localhost)
+├── application-docker.properties docker profile (Compose service names)
 └── db/changelog/
     ├── db.changelog-master.yaml  includes one changelog per task
     └── changes/<n>/              changelog.yml + SQL scripts of one task (e.g. 1 = USR-1)
