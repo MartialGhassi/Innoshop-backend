@@ -3,6 +3,7 @@ plugins {
 	id 'jacoco'
 	id 'org.springframework.boot' version '4.1.1'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.sonarqube' version '7.6.0.18749'
 }
 
 group = 'com.innowise.academy'
@@ -20,6 +21,14 @@ repositories {
 
 jacoco {
 	toolVersion = '0.8.16'
+}
+
+sonar {
+	properties {
+		property 'sonar.organization', 'martialghassi'
+		property 'sonar.projectKey', 'MartialGhassi_Innoshop-backend'
+		property 'sonar.host.url', 'https://sonarcloud.io'
+	}
 }
 
 dependencies {
