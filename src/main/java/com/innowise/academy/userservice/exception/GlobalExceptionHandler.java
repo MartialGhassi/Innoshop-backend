@@ -86,7 +86,8 @@ public class GlobalExceptionHandler {
         } else if (cause.contains(CARD_NUMBER_CONSTRAINT)) {
             message = ErrorCode.CARD_NUMBER_ALREADY_EXISTS.format();
         } else {
-            log.warn("Data integrity violation on {}: {}", request.getRequestURI(), cause);
+            log.warn("Data integrity violation on {}: {}", sanitizeForLog(request.getRequestURI()),
+                    sanitizeForLog(cause));
             message = ErrorCode.DATA_CONFLICT.format();
         }
         return buildResponse(HttpStatus.CONFLICT, message, request, Map.of());
@@ -156,7 +157,7 @@ public class GlobalExceptionHandler {
                 return buildResponse(status, springError.getBody().getDetail(), request, Map.of());
             }
         }
-        log.error("Unexpected error on {}", request.getRequestURI(), ex);
+        log.error("Unexpected error on {}", sanitizeForLog(request.getRequestURI()), ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR.format(),
                 request, Map.of());
     }
@@ -173,5 +174,9 @@ public class GlobalExceptionHandler {
                 fieldErrors
         );
         return ResponseEntity.status(status).body(body);
+    }
+
+    private static String sanitizeForLog(String value) {
+        return value.replaceAll("[\r\n]", "_");
     }
 }
