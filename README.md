@@ -199,10 +199,10 @@ docker compose down            # stop and remove the containers (data volume is 
 ```bash
 docker compose up -d postgres redis
 docker build -t user-service .
-docker run --rm --network innoshop_default --env-file .env -p 127.0.0.1:8081:8081 user-service
+docker run --rm --network user-service_default --env-file .env -p 127.0.0.1:8081:8081 user-service
 ```
 
-`innoshop_default` is the network created by Compose (`<project folder>_default`, check with `docker network ls`).
+`user-service_default` is the network created by Compose. Its name comes from the project name set in `compose.yaml` (`name: user-service`), so it does not depend on the name of the cloned folder.
 
 ## Project structure
 
