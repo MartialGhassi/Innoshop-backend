@@ -5,6 +5,8 @@ import com.innowise.academy.userservice.exception.CardNotFoundException;
 import com.innowise.academy.userservice.exception.UserNotFoundException;
 import com.innowise.academy.userservice.model.dto.PaymentCardRequest;
 import com.innowise.academy.userservice.model.dto.PaymentCardResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 /**
@@ -73,4 +75,17 @@ public interface PaymentCardService {
      * @throws CardLimitExceededException if activation would exceed the limit
      */
     void updateStatus(Long id, boolean active);
+
+    /**
+     * Returns one page of all cards, optionally filtered by their owner's name and surname.
+     *
+     * <p>Both filters are optional, partial ("contains") and case-insensitive; a {@code null}
+     * or blank value means "no filter".
+     *
+     * @param name     part of the owner's first name, may be {@code null}
+     * @param surname  part of the owner's last name, may be {@code null}
+     * @param pageable page number, size and sort order
+     * @return the requested page of cards, empty if none match
+     */
+    Page<PaymentCardResponse> getAll(String name, String surname, Pageable pageable);
 }
