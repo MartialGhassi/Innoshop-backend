@@ -1,6 +1,7 @@
 package com.innowise.academy.userservice.controller;
 
 import com.innowise.academy.userservice.model.dto.StatusRequest;
+import com.innowise.academy.userservice.model.dto.UserDetailsResponse;
 import com.innowise.academy.userservice.model.dto.UserRequest;
 import com.innowise.academy.userservice.model.dto.UserResponse;
 import com.innowise.academy.userservice.service.UserService;
@@ -66,13 +67,13 @@ public class UserController {
     }
 
     /**
-     * Returns one user by id.
+     * Returns one user by id, including its payment cards.
      *
      * @param id the user id
-     * @return 200 OK with the user
+     * @return 200 OK with the user and its cards
      */
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<UserDetailsResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getById(id));
     }
 
