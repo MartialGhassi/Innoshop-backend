@@ -1,10 +1,11 @@
 # Secrets
 .env
 
-# Version control
+# Version control and CI
 .git
 .gitignore
 .gitattributes
+.github/
 
 # Build output and caches
 build/
