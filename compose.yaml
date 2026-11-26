@@ -1,3 +1,4 @@
+name: user-service
 services:
   postgres:
     image: postgres:17-alpine
@@ -26,6 +27,20 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  app:
+    build: .
+    image: user-service
+    container_name: user-service-app
+    env_file: .env
+    ports:
+      - "127.0.0.1:${APP_PORT:-8081}:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres-data:
 

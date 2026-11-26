@@ -1,0 +1,27 @@
+# Secrets
+.env
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Build output and caches
+build/
+.gradle/
+out/
+bin/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# Docker and documentation files not needed inside the image
+Dockerfile
+.dockerignore
+compose.yaml
+README.md
+HELP.md
