@@ -18,6 +18,6 @@ public record UserRequest(
         @NotBlank @Size(max = 100) String name,
         @NotBlank @Size(max = 100) String surname,
         @Past LocalDate birthDate,
-        @NotBlank @Email String email
+        @NotBlank @Email @Size(max = 255) String email
 ) {
 }

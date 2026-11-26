@@ -10,7 +10,15 @@ public enum ErrorCode {
 
     USER_NOT_FOUND("User with id %d not found"),
     CARD_NOT_FOUND("Payment card with id %d not found"),
-    CARD_LIMIT_EXCEEDED("User with id %d already has the maximum of 5 active cards");
+    CARD_LIMIT_EXCEEDED("User with id %d already has the maximum of 5 active cards"),
+    EMAIL_ALREADY_EXISTS("A user with this email already exists"),
+    CARD_NUMBER_ALREADY_EXISTS("A payment card with this number already exists"),
+    DATA_CONFLICT("The request conflicts with existing data"),
+    VALIDATION_FAILED("Request validation failed"),
+    INVALID_PARAMETER("Parameter '%s' has an invalid value '%s'"),
+    ENDPOINT_NOT_FOUND("No endpoint %s %s"),
+    MALFORMED_REQUEST("Malformed or missing request body"),
+    INTERNAL_ERROR("An unexpected error occurred");
 
     private final String template;
 
