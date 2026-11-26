@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,6 +34,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * Unit tests for {@link PaymentCardServiceImpl}, with the repositories, the mapper and the
@@ -134,6 +140,19 @@ class PaymentCardServiceImplTest {
         assertThatThrownBy(() -> paymentCardService.getAllByUserId(USER_ID))
                 .isInstanceOf(UserNotFoundException.class);
         verify(paymentCardRepository, never()).findAllByUserId(anyLong());
+    }
+
+    @Test
+    void getAllReturnsMappedPageOfFilteredCards() {
+        Pageable pageable = PageRequest.of(0, 20);
+        when(paymentCardRepository.findAll(any(Specification.class), eq(pageable)))
+                .thenReturn(new PageImpl<>(List.of(card), pageable, 1));
+        when(paymentCardMapper.toResponse(card)).thenReturn(response);
+
+        Page<PaymentCardResponse> result = paymentCardService.getAll("ann", "smi", pageable);
+
+        assertThat(result.getContent()).containsExactly(response);
+        assertThat(result.getTotalElements()).isEqualTo(1);
     }
 
     @Test
