@@ -52,7 +52,8 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         checkActiveCardLimit(userId);
         PaymentCardEntity card = paymentCardMapper.toEntity(request);
         card.setUser(user);
-        PaymentCardResponse response = paymentCardMapper.toResponse(paymentCardRepository.save(card));
+        PaymentCardResponse response =
+                paymentCardMapper.toResponse(paymentCardRepository.save(card));
         evictCachedUser(userId);
         return response;
     }

@@ -16,7 +16,8 @@ import org.springframework.data.repository.query.Param;
  * <p>Paginated filtering is done through {@link JpaSpecificationExecutor} with the
  * specifications from {@code UserSpecification}.
  */
-public interface UserRepository extends JpaRepository<UserEntity, Long>, JpaSpecificationExecutor<UserEntity> {
+public interface UserRepository
+        extends JpaRepository<UserEntity, Long>, JpaSpecificationExecutor<UserEntity> {
 
     /**
      * Loads a user and locks its row until the end of the current transaction
