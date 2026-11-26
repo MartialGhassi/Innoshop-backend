@@ -8,6 +8,9 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,14 +20,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * REST endpoints for managing payment cards.
  *
- * <p>Cards are created and listed under their owner ({@code /api/users/{userId}/cards})
- * and read, updated, deleted or (de)activated directly by id ({@code /api/cards/{id}}).
+ * <p>Cards are created and listed under their owner ({@code /api/users/{userId}/cards}),
+ * listed across all users with owner filters ({@code /api/cards}) and read, updated,
+ * deleted or (de)activated directly by id ({@code /api/cards/{id}}).
  */
 @RestController
 @RequestMapping("/api")
@@ -61,6 +66,23 @@ public class PaymentCardController {
     @GetMapping("/users/{userId}/cards")
     public ResponseEntity<List<PaymentCardResponse>> getAllByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(paymentCardService.getAllByUserId(userId));
+    }
+
+    /**
+     * Returns one page of all payment cards, optionally filtered by their owner's name and
+     * surname.
+     *
+     * @param name     part of the owner's first name, optional
+     * @param surname  part of the owner's last name, optional
+     * @param pageable page number, size and sort order
+     * @return 200 OK with the requested page
+     */
+    @GetMapping("/cards")
+    public ResponseEntity<Page<PaymentCardResponse>> getAll(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String surname,
+            @PageableDefault(sort = "id") Pageable pageable) {
+        return ResponseEntity.ok(paymentCardService.getAll(name, surname, pageable));
     }
 
     /**
