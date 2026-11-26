@@ -147,6 +147,50 @@ class PaymentCardControllerIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    // ---------- GET /api/cards ----------
+
+    @Test
+    void getAllFiltersByOwnerNameAndSurnameIgnoringCase() throws Exception {
+        createCard("4000000000000001");
+        createCardFor(createUser("Hanna", "Meyer", "hanna@test.com"), "4000000000000002");
+        createCardFor(createUser("Peter", "Schmidt", "peter@test.com"), "4000000000000003");
+
+        mockMvc.perform(get("/api/cards")
+                        .param("name", "ANN")
+                        .param("surname", "schmi"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].userId").value(userId))
+                .andExpect(jsonPath("$.page.totalElements").value(1));
+    }
+
+    @Test
+    void getAllWithOnlyNameFilterMatchesPartialNames() throws Exception {
+        createCard("4000000000000001");
+        createCardFor(createUser("Hanna", "Meyer", "hanna@test.com"), "4000000000000002");
+        createCardFor(createUser("Peter", "Schmidt", "peter@test.com"), "4000000000000003");
+
+        mockMvc.perform(get("/api/cards").param("name", "anna"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements").value(2));
+    }
+
+    @Test
+    void getAllWithoutFiltersReturnsRequestedPage() throws Exception {
+        createCard("4000000000000001");
+        createCardFor(createUser("Hanna", "Meyer", "hanna@test.com"), "4000000000000002");
+        createCardFor(createUser("Peter", "Schmidt", "peter@test.com"), "4000000000000003");
+
+        mockMvc.perform(get("/api/cards")
+                        .param("page", "1")
+                        .param("size", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].number").value("4000000000000003"))
+                .andExpect(jsonPath("$.page.totalElements").value(3))
+                .andExpect(jsonPath("$.page.totalPages").value(2));
+    }
+
     // ---------- GET /api/cards/{id} ----------
 
     @Test
@@ -288,9 +332,23 @@ class PaymentCardControllerIntegrationTest {
     // ---------- Helpers ----------
 
     private long createUser() throws Exception {
+        return createUserFromJson(USER_JSON);
+    }
+
+    private long createUser(String name, String surname, String email) throws Exception {
+        return createUserFromJson("""
+                {
+                  "name": "%s",
+                  "surname": "%s",
+                  "email": "%s"
+                }
+                """.formatted(name, surname, email));
+    }
+
+    private long createUserFromJson(String json) throws Exception {
         String body = mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(USER_JSON))
+                        .content(json))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
@@ -300,7 +358,11 @@ class PaymentCardControllerIntegrationTest {
     }
 
     private long createCard(String number) throws Exception {
-        String body = mockMvc.perform(post("/api/users/{userId}/cards", userId)
+        return createCardFor(userId, number);
+    }
+
+    private long createCardFor(long ownerId, String number) throws Exception {
+        String body = mockMvc.perform(post("/api/users/{userId}/cards", ownerId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(cardJson(number)))
                 .andExpect(status().isCreated())

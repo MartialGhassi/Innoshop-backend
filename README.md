@@ -78,6 +78,7 @@ Base URL: `http://localhost:8081`
 |---|---|---|---|
 | `POST` | `/api/users/{userId}/cards` | Add a card to a user | `201 Created` + `Location: /api/cards/{id}` |
 | `GET` | `/api/users/{userId}/cards` | List the cards of a user | `200 OK` |
+| `GET` | `/api/cards?name=&surname=&page=&size=&sort=` | Paginated list of all cards, optional filters on the owner's name/surname (contains, case-insensitive) | `200 OK` |
 | `GET` | `/api/cards/{id}` | Get a card | `200 OK` |
 | `PUT` | `/api/cards/{id}` | Update a card | `200 OK` |
 | `DELETE` | `/api/cards/{id}` | Delete a card | `204 No Content` |

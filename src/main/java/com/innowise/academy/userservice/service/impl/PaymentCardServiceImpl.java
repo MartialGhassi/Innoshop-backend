@@ -11,11 +11,15 @@ import com.innowise.academy.userservice.model.entity.UserEntity;
 import com.innowise.academy.userservice.model.mapper.PaymentCardMapper;
 import com.innowise.academy.userservice.repository.PaymentCardRepository;
 import com.innowise.academy.userservice.repository.UserRepository;
+import com.innowise.academy.userservice.repository.specification.PaymentCardSpecification;
 import com.innowise.academy.userservice.service.PaymentCardService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,6 +72,14 @@ public class PaymentCardServiceImpl implements PaymentCardService {
                 .stream()
                 .map(paymentCardMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PaymentCardResponse> getAll(String name, String surname, Pageable pageable) {
+        Specification<PaymentCardEntity> spec = PaymentCardSpecification.userNameContains(name)
+                .and(PaymentCardSpecification.userSurnameContains(surname));
+        return paymentCardRepository.findAll(spec, pageable).map(paymentCardMapper::toResponse);
     }
 
     @Override
